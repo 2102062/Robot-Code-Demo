@@ -4,9 +4,22 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PWM;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
+import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.command.FanManualControlCommand;
+import frc.robot.subsystem.MotorSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -20,12 +33,41 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
+  public Talon talonSR;
+  public Spark spark;
+  public WPI_VictorSPX victorSPX;
+  public CANSparkMax sparkMax;
+  public PWM pwmFan;
+
+  public PowerDistributionPanel pdp;
+
+  public Compressor airCompressor;
+
+  public Joystick joystick;
+
+  public MotorSubsystem motorSubsystem;
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   @Override
   public void robotInit() {
+    talonSR = new Talon(7);
+    spark = new Spark(8);
+    victorSPX = new WPI_VictorSPX(0);
+    sparkMax = new CANSparkMax(5, MotorType.kBrushed);
+    pwmFan = new PWM(6);
+
+    pdp = new PowerDistributionPanel();
+    pdp.clearStickyFaults();
+
+    airCompressor = new Compressor(1);
+    
+    motorSubsystem = new MotorSubsystem(talonSR, spark, victorSPX, sparkMax, pwmFan);
+
+    joystick = new Joystick(0);
+
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
@@ -39,7 +81,9 @@ public class Robot extends TimedRobot {
    * SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+    CommandScheduler.getInstance().run();
+  }
 
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
@@ -53,7 +97,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    CommandScheduler.getInstance().cancelAll();
     m_autoSelected = m_chooser.getSelected();
+    airCompressor.start();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
   }
@@ -74,11 +120,17 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when teleop is enabled. */
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    System.out.println("Initializing teleop");
+    airCompressor.stop();
+    CommandScheduler.getInstance().cancelAll();
+    CommandScheduler.getInstance().schedule(new FanManualControlCommand(motorSubsystem, joystick));
+  }
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+  }
 
   /** This function is called once when the robot is disabled. */
   @Override
