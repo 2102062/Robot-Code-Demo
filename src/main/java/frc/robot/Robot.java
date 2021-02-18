@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -18,7 +19,12 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.command.Falcon500ManualControlCommand;
 import frc.robot.command.FanManualControlCommand;
+import frc.robot.command.SparkManualControlCommand;
+import frc.robot.command.SparkMaxManualControlCommand;
+import frc.robot.command.TalonSRManualControlCommand;
+import frc.robot.command.VictorSPXManualControlCommand;
 import frc.robot.subsystem.MotorSubsystem;
 
 /**
@@ -37,11 +43,12 @@ public class Robot extends TimedRobot {
   public Spark spark;
   public WPI_VictorSPX victorSPX;
   public CANSparkMax sparkMax;
+  public WPI_TalonFX falcon;
   public PWM pwmFan;
 
-  public PowerDistributionPanel pdp;
+ // public PowerDistributionPanel pdp;
 
-  public Compressor airCompressor;
+ // public Compressor airCompressor;
 
   public Joystick joystick;
 
@@ -53,24 +60,27 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    System.out.println("robotInit() starting...");
     talonSR = new Talon(7);
     spark = new Spark(8);
-    victorSPX = new WPI_VictorSPX(0);
+    victorSPX = new WPI_VictorSPX(1);
     sparkMax = new CANSparkMax(5, MotorType.kBrushed);
     pwmFan = new PWM(6);
+    falcon = new WPI_TalonFX(0);
 
-    pdp = new PowerDistributionPanel();
-    pdp.clearStickyFaults();
+  //  pdp = new PowerDistributionPanel();
+  //  pdp.clearStickyFaults();
 
-    airCompressor = new Compressor(1);
+   // airCompressor = new Compressor(1);
     
-    motorSubsystem = new MotorSubsystem(talonSR, spark, victorSPX, sparkMax, pwmFan);
+    motorSubsystem = new MotorSubsystem(talonSR, spark, victorSPX, sparkMax, pwmFan, falcon);
 
     joystick = new Joystick(0);
 
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+    System.out.println("robotInit() complete!");
   }
 
   /**
@@ -99,7 +109,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     CommandScheduler.getInstance().cancelAll();
     m_autoSelected = m_chooser.getSelected();
-    airCompressor.start();
+  //  airCompressor.start();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
   }
@@ -122,9 +132,9 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     System.out.println("Initializing teleop");
-    airCompressor.stop();
+ //   airCompressor.stop();
     CommandScheduler.getInstance().cancelAll();
-    CommandScheduler.getInstance().schedule(new FanManualControlCommand(motorSubsystem, joystick));
+    CommandScheduler.getInstance().schedule(new Falcon500ManualControlCommand(motorSubsystem, joystick));
   }
 
   /** This function is called periodically during operator control. */

@@ -1,5 +1,6 @@
 package frc.robot.subsystem;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.revrobotics.CANSparkMax;
 
@@ -14,13 +15,15 @@ public class MotorSubsystem extends SubsystemBase {
     private WPI_VictorSPX victorSPX;
     private CANSparkMax sparkMax;
     private PWM pwmFan;
+    private WPI_TalonFX falcon;
 
-    public MotorSubsystem(Talon talonSR, Spark spark, WPI_VictorSPX victorSPX, CANSparkMax sparkMax, PWM pwmFan) {
+    public MotorSubsystem(Talon talonSR, Spark spark, WPI_VictorSPX victorSPX, CANSparkMax sparkMax, PWM pwmFan, WPI_TalonFX falcon) {
         this.pwmFan = pwmFan;
         this.talonSR = talonSR; 
         this.spark = spark;
         this.victorSPX = victorSPX;
         this.sparkMax = sparkMax;
+        this.falcon = falcon;
     }
 
     public void setTalonSR(double num) {
@@ -57,5 +60,13 @@ public class MotorSubsystem extends SubsystemBase {
 
     public void setFanSpeed(double num) {
         pwmFan.setSpeed(num);
+    }
+
+    public void setFalcon(double num) {
+        falcon.set(num);
+    }
+
+    public double getFalcon() {
+        return falcon.get();
     }
 }
