@@ -4,16 +4,22 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class PnuematicSubsystem extends SubsystemBase {
-    private Solenoid solenoid1;
-    private Solenoid solenoid2;
+    private Solenoid cylinderSolenoid1;
+    private Solenoid cylinderSolenoid2;
+    private Solenoid solenoid;
 
-    public PnuematicSubsystem(Solenoid solenoid1, Solenoid solenoid2) {
-        this.solenoid1 = solenoid1;
-        this.solenoid2 = solenoid2;
+    public PnuematicSubsystem(Solenoid cylinderSolenoid1, Solenoid cylinderSolenoid2, Solenoid solenoid) {
+        this.cylinderSolenoid1 = cylinderSolenoid1;
+        this.cylinderSolenoid2 = cylinderSolenoid2;
+        this.solenoid = solenoid;
     }
 
-    public void setSolenoid1(boolean on) {
-        solenoid2.set(!on);
-        solenoid1.set(on);
+    public void setSolenoid(boolean on) {
+        solenoid.set(on);
+    }
+
+    public void setCylinderSolenoids(boolean on) {
+        cylinderSolenoid2.set(!on);
+        cylinderSolenoid1.set(on);
     }
 }

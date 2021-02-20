@@ -24,8 +24,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.command.Falcon500ManualControlCommand;
 import frc.robot.command.FanManualControlCommand;
-import frc.robot.command.SolenoidOffCommand;
-import frc.robot.command.SolenoidOnCommand;
+import frc.robot.command.CylinderInCommand;
+import frc.robot.command.CylinderOutCommand;
 import frc.robot.command.SparkManualControlCommand;
 import frc.robot.command.SparkMaxManualControlCommand;
 import frc.robot.command.TalonSRManualControlCommand;
@@ -46,18 +46,19 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  public Talon talonSR;
-  public Spark spark;
-  public WPI_VictorSPX victorSPX;
-  public CANSparkMax sparkMax;
-  public WPI_TalonFX falcon;
-  public PWM pwmFan;
+  private Talon talonSR;
+  private Spark spark;
+  private WPI_VictorSPX victorSPX;
+  private CANSparkMax sparkMax;
+  private WPI_TalonFX falcon;
+  private PWM pwmFan;
+
+  private Solenoid cylinderSolenoid1;
+  private Solenoid cylinderSolenoid2;
+  private Solenoid solenoid;
 
   public PowerDistributionPanel pdp;
-
   public Compressor airCompressor;
-  public Solenoid solenoid1;
-  public Solenoid solenoid2;
 
   public Joystick joystick;
 
@@ -81,13 +82,16 @@ public class Robot extends TimedRobot {
     pdp.clearStickyFaults();
 
     airCompressor = new Compressor();
-    solenoid1 = new Solenoid(2);
-    solenoid2 = new Solenoid(1);
+    cylinderSolenoid1 = new Solenoid(2);
+    cylinderSolenoid2 = new Solenoid(1);
+    solenoid = new Solenoid(0);
 
     motorSubsystem = new MotorSubsystem(talonSR, spark, victorSPX, sparkMax, pwmFan, falcon);
-    pnuematicSubsystem = new PnuematicSubsystem(solenoid1, solenoid2);
+    pnuematicSubsystem = new PnuematicSubsystem(cylinderSolenoid1, cylinderSolenoid2, solenoid);
 
     joystick = new Joystick(0);
+
+    DashHelper.startDash();
 
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
@@ -155,8 +159,8 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().schedule(new Falcon500ManualControlCommand(motorSubsystem, joystick));
 
     JoystickButton button12 = new JoystickButton(joystick, 12);
-    button12.whenPressed(new SolenoidOnCommand(pnuematicSubsystem));
-    button12.whenReleased(new SolenoidOffCommand(pnuematicSubsystem));
+    button12.whenPressed(new CylinderOutCommand(pnuematicSubsystem));
+    button12.whenReleased(new CylinderInCommand(pnuematicSubsystem));
   }
 
   /** This function is called periodically during operator control. */
