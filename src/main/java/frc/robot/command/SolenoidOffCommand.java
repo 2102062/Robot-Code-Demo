@@ -14,6 +14,7 @@ public class SolenoidOffCommand extends CommandBase {
     @Override
     public void initialize() {
         pnuematicSubsystem.setSolenoid(false);
+        pnuematicSubsystem.clearSolenoidStickyFaults();
     }
 
     @Override

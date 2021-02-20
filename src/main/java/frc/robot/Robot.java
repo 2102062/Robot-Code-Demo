@@ -9,7 +9,9 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.hal.simulation.PCMDataJNI;
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
@@ -48,6 +50,10 @@ public class Robot extends TimedRobot {
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  
+  private final double LOWER_PRESSURE_LIMIT = 20.0;
+  private final double UPPER_PRESSURE_LIMIT = 60.0;
+
 
   private Talon talonSR;
   private Spark spark;
@@ -57,13 +63,14 @@ public class Robot extends TimedRobot {
   private PWM pwmFan;
   private PWM pwmServo;
 
-
   private Solenoid cylinderSolenoid1;
   private Solenoid cylinderSolenoid2;
   private Solenoid solenoid;
 
+  private DigitalInput limitSwitch;
+
   public PowerDistributionPanel pdp;
-  public Compressor airCompressor;
+  public Compressor airCompressor; 
 
   public RobotStick joystick;
 
@@ -88,9 +95,13 @@ public class Robot extends TimedRobot {
     pdp.clearStickyFaults();
 
     airCompressor = new Compressor();
+    airCompressor.setClosedLoopControl(true);
+
     cylinderSolenoid1 = new Solenoid(2);
     cylinderSolenoid2 = new Solenoid(1);
     solenoid = new Solenoid(0);
+
+    limitSwitch = new DigitalInput(9);
 
     motorSubsystem = new MotorSubsystem(talonSR, spark, victorSPX, sparkMax, pwmFan, falcon, pwmServo);
     pnuematicSubsystem = new PnuematicSubsystem(cylinderSolenoid1, cylinderSolenoid2, solenoid);
@@ -102,6 +113,8 @@ public class Robot extends TimedRobot {
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
+
+    airCompressor.start();
     System.out.println("robotInit() complete!");
   }
 
@@ -136,7 +149,6 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().cancelAll();
     m_autoSelected = m_chooser.getSelected();
     airCompressor.start();
-    System.out.println(airCompressor.getCompressorCurrent());
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
   }
@@ -159,15 +171,20 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     System.out.println("Initializing teleop");
-    airCompressor.stop();
 
     CommandScheduler.getInstance().cancelAll();
-    CommandScheduler.getInstance().schedule(new ServoManualPositionCommand(motorSubsystem, joystick));
+    CommandScheduler.getInstance().schedule(new ServoManualPositionCommand(motorSubsystem, joystick, limitSwitch));
 
-    joystick.getButton(12).whenPressed(new CylinderOutCommand(pnuematicSubsystem));
-    joystick.getButton(12).whenReleased(new CylinderInCommand(pnuematicSubsystem));
+    joystick.getButton(5).whenPressed(new ServoManualPositionCommand(motorSubsystem, joystick, limitSwitch));
+    joystick.getButton(6).whenPressed(new SparkManualControlCommand(motorSubsystem, joystick));
+    joystick.getButton(7).whenPressed(new TalonSRManualControlCommand(motorSubsystem, joystick));
+    joystick.getButton(8).whenPressed(new VictorSPXManualControlCommand(motorSubsystem, joystick));
+    // joystick.getButton(9).whenPressed(new SparkMaxManualControlCommand(motorSubsystem, joystick));
+    joystick.getButton(10).whenPressed(new Falcon500ManualControlCommand(motorSubsystem, joystick));
     joystick.getButton(11).whenPressed(new SolenoidOnCommand(pnuematicSubsystem));
     joystick.getButton(11).whenReleased(new SolenoidOffCommand(pnuematicSubsystem));
+    joystick.getButton(12).whenPressed(new CylinderOutCommand(pnuematicSubsystem));
+    joystick.getButton(12).whenReleased(new CylinderInCommand(pnuematicSubsystem));
   }
 
   /** This function is called periodically during operator control. */

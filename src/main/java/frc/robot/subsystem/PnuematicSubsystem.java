@@ -22,4 +22,8 @@ public class PnuematicSubsystem extends SubsystemBase {
         cylinderSolenoid2.set(!on);
         cylinderSolenoid1.set(on);
     }
+
+    public void clearSolenoidStickyFaults() {
+        if(solenoid.isBlackListed()) solenoid.clearAllPCMStickyFaults();
+    }
 }
