@@ -19,8 +19,8 @@ public class ServoManualPositionCommand extends CommandBase {
 
     @Override
     public void execute() {
-        double axis = joystick.getRawAxis(1);
-        double normalized = (axis + 1)/2;
+        double stickPos = joystick.getRawAxis(1);
+        double normalized = (stickPos + 1)/2;
         motorSubsystem.setServo(limitSwitch.get() ? 1 - normalized : normalized);
     }
     

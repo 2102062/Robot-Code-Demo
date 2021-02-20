@@ -19,7 +19,12 @@ public class SparkManualControlCommand extends CommandBase {
 
     @Override
     public void execute() {
-        double axis = joystick.getRawAxis(1);
-        motorSubsystem.setSpark(axis*.5);
+        double stickPos = joystick.getRawAxis(1);
+        motorSubsystem.setSpark(stickPos*.5);
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        motorSubsystem.setSpark(0);
     }
 } 

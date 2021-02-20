@@ -19,7 +19,12 @@ public class VictorSPXManualControlCommand extends CommandBase {
 
     @Override
     public void execute() {
-        double axis = joystick.getRawAxis(1);
-        motorSubsystem.setVictorSPX(axis*.5);
+        double stickPos = joystick.getRawAxis(1);
+        motorSubsystem.setVictorSPX(stickPos*.5);
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        motorSubsystem.setVictorSPX(0);
     }
 } 

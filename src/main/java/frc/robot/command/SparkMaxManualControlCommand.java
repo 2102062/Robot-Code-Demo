@@ -19,7 +19,12 @@ public class SparkMaxManualControlCommand extends CommandBase {
 
     @Override
     public void execute() {
-        double axis = joystick.getRawAxis(1);
-        motorSubsystem.setSparkMax(axis);
+        double stickPos = joystick.getRawAxis(1);
+        motorSubsystem.setSparkMax(stickPos);
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        motorSubsystem.setSparkMax(0);
     }
 } 

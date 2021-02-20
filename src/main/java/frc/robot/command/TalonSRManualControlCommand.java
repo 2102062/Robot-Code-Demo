@@ -1,7 +1,5 @@
 package frc.robot.command;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystem.MotorSubsystem;
@@ -21,7 +19,12 @@ public class TalonSRManualControlCommand extends CommandBase {
 
     @Override
     public void execute() {
-        double axis = joystick.getRawAxis(1);
-        motorSubsystem.setTalonSR(axis*.5);
+        double stickPos = joystick.getRawAxis(1);
+        motorSubsystem.setTalonSR(stickPos*.5);
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        motorSubsystem.setTalonSR(0);
     }
 } 

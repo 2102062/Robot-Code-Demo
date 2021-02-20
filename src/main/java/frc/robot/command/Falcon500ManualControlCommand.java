@@ -19,7 +19,12 @@ public class Falcon500ManualControlCommand extends CommandBase {
 
     @Override
     public void execute() {
-        double axis = joystick.getRawAxis(1);
-        motorSubsystem.setFalcon(axis*.5);
+        double stickPos = joystick.getRawAxis(1);
+        motorSubsystem.setFalcon(stickPos*.5);
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+        motorSubsystem.setFalcon(0);
     }
 } 
