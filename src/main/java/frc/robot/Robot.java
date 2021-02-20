@@ -24,6 +24,9 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.command.Falcon500ManualControlCommand;
 import frc.robot.command.FanManualControlCommand;
+import frc.robot.command.ServoManualPositionCommand;
+import frc.robot.command.SolenoidOffCommand;
+import frc.robot.command.SolenoidOnCommand;
 import frc.robot.command.CylinderInCommand;
 import frc.robot.command.CylinderOutCommand;
 import frc.robot.command.SparkManualControlCommand;
@@ -52,6 +55,8 @@ public class Robot extends TimedRobot {
   private CANSparkMax sparkMax;
   private WPI_TalonFX falcon;
   private PWM pwmFan;
+  private PWM pwmServo;
+
 
   private Solenoid cylinderSolenoid1;
   private Solenoid cylinderSolenoid2;
@@ -60,7 +65,7 @@ public class Robot extends TimedRobot {
   public PowerDistributionPanel pdp;
   public Compressor airCompressor;
 
-  public Joystick joystick;
+  public RobotStick joystick;
 
   public MotorSubsystem motorSubsystem;
   public PnuematicSubsystem pnuematicSubsystem;
@@ -76,6 +81,7 @@ public class Robot extends TimedRobot {
     victorSPX = new WPI_VictorSPX(1);
     sparkMax = new CANSparkMax(5, MotorType.kBrushed);
     pwmFan = new PWM(6);
+    pwmServo = new PWM(9);
     falcon = new WPI_TalonFX(0);
 
     pdp = new PowerDistributionPanel();
@@ -86,10 +92,10 @@ public class Robot extends TimedRobot {
     cylinderSolenoid2 = new Solenoid(1);
     solenoid = new Solenoid(0);
 
-    motorSubsystem = new MotorSubsystem(talonSR, spark, victorSPX, sparkMax, pwmFan, falcon);
+    motorSubsystem = new MotorSubsystem(talonSR, spark, victorSPX, sparkMax, pwmFan, falcon, pwmServo);
     pnuematicSubsystem = new PnuematicSubsystem(cylinderSolenoid1, cylinderSolenoid2, solenoid);
 
-    joystick = new Joystick(0);
+    joystick = new RobotStick(0);
 
     DashHelper.startDash();
 
@@ -156,11 +162,12 @@ public class Robot extends TimedRobot {
     airCompressor.stop();
 
     CommandScheduler.getInstance().cancelAll();
-    CommandScheduler.getInstance().schedule(new Falcon500ManualControlCommand(motorSubsystem, joystick));
+    CommandScheduler.getInstance().schedule(new ServoManualPositionCommand(motorSubsystem, joystick));
 
-    JoystickButton button12 = new JoystickButton(joystick, 12);
-    button12.whenPressed(new CylinderOutCommand(pnuematicSubsystem));
-    button12.whenReleased(new CylinderInCommand(pnuematicSubsystem));
+    joystick.getButton(12).whenPressed(new CylinderOutCommand(pnuematicSubsystem));
+    joystick.getButton(12).whenReleased(new CylinderInCommand(pnuematicSubsystem));
+    joystick.getButton(11).whenPressed(new SolenoidOnCommand(pnuematicSubsystem));
+    joystick.getButton(11).whenReleased(new SolenoidOffCommand(pnuematicSubsystem));
   }
 
   /** This function is called periodically during operator control. */

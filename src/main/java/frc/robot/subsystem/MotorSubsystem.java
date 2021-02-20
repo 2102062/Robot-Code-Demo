@@ -16,14 +16,16 @@ public class MotorSubsystem extends SubsystemBase {
     private CANSparkMax sparkMax;
     private PWM pwmFan;
     private WPI_TalonFX falcon;
+    private PWM pwmServo;
 
-    public MotorSubsystem(Talon talonSR, Spark spark, WPI_VictorSPX victorSPX, CANSparkMax sparkMax, PWM pwmFan, WPI_TalonFX falcon) {
+    public MotorSubsystem(Talon talonSR, Spark spark, WPI_VictorSPX victorSPX, CANSparkMax sparkMax, PWM pwmFan, WPI_TalonFX falcon, PWM pwmServo) {
         this.pwmFan = pwmFan;
         this.talonSR = talonSR; 
         this.spark = spark;
         this.victorSPX = victorSPX;
         this.sparkMax = sparkMax;
         this.falcon = falcon;
+        this.pwmServo = pwmServo;
     }
 
     public void setTalonSR(double num) {
@@ -68,5 +70,13 @@ public class MotorSubsystem extends SubsystemBase {
 
     public double getFalcon() {
         return falcon.get();
+    }
+
+    public void setServo(double position) {
+        pwmServo.setPosition(position);
+    }
+
+    public double getServo() {
+        return pwmServo.getPosition();
     }
 }
