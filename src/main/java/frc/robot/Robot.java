@@ -21,14 +21,21 @@ import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+
 import frc.robot.command.Falcon500ManualControlCommand;
+import frc.robot.command.FalconRotationCommand;
 import frc.robot.command.FanManualControlCommand;
+import frc.robot.command.SendI2CInfo;
+import frc.robot.command.SendSerialInfo;
 import frc.robot.command.ServoManualPositionCommand;
 import frc.robot.command.SolenoidOffCommand;
 import frc.robot.command.SolenoidOnCommand;
+import frc.robot.command.AllMotorsManualControl;
 import frc.robot.command.CylinderInCommand;
 import frc.robot.command.CylinderOutCommand;
 import frc.robot.command.SparkManualControlCommand;
@@ -76,7 +83,11 @@ public class Robot extends TimedRobot {
 
   public MotorSubsystem motorSubsystem;
   public PnuematicSubsystem pnuematicSubsystem;
-  /**
+
+  public I2C Wire;
+
+  public SerialPort arduino;
+  /*
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
    */
@@ -116,6 +127,11 @@ public class Robot extends TimedRobot {
 
     airCompressor.start();
     System.out.println("robotInit() complete!");
+
+    Wire = new I2C(I2C.Port.kOnboard, 8);
+
+    SerialPort arduino = new SerialPort(9600, SerialPort.Port.kUSB);
+    
   }
 
   /**
@@ -175,16 +191,20 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().cancelAll();
     CommandScheduler.getInstance().schedule(new ServoManualPositionCommand(motorSubsystem, joystick, limitSwitch));
 
+    joystick.getButton(2).whenPressed(new SendSerialInfo(arduino, "Go"));
+    joystick.getButton(3).whenPressed(new FalconRotationCommand(motorSubsystem, joystick));
+    joystick.getButton(4).whenPressed(new AllMotorsManualControl(motorSubsystem, joystick));
     joystick.getButton(5).whenPressed(new ServoManualPositionCommand(motorSubsystem, joystick, limitSwitch));
     joystick.getButton(6).whenPressed(new SparkManualControlCommand(motorSubsystem, joystick));
     joystick.getButton(7).whenPressed(new TalonSRManualControlCommand(motorSubsystem, joystick));
     joystick.getButton(8).whenPressed(new VictorSPXManualControlCommand(motorSubsystem, joystick));
-    // joystick.getButton(9).whenPressed(new SparkMaxManualControlCommand(motorSubsystem, joystick));
+    joystick.getButton(9).whenPressed(new SparkMaxManualControlCommand(motorSubsystem, joystick));
     joystick.getButton(10).whenPressed(new Falcon500ManualControlCommand(motorSubsystem, joystick));
     joystick.getButton(11).whenPressed(new SolenoidOnCommand(pnuematicSubsystem));
     joystick.getButton(11).whenReleased(new SolenoidOffCommand(pnuematicSubsystem));
     joystick.getButton(12).whenPressed(new CylinderOutCommand(pnuematicSubsystem));
     joystick.getButton(12).whenReleased(new CylinderInCommand(pnuematicSubsystem));
+    
   }
 
   /** This function is called periodically during operator control. */
