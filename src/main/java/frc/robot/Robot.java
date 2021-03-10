@@ -84,7 +84,7 @@ public class Robot extends TimedRobot {
   public MotorSubsystem motorSubsystem;
   public PnuematicSubsystem pnuematicSubsystem;
 
-  public I2C Wire;
+  //public I2C Wire;
 
   public SerialPort arduino;
   /*
@@ -128,9 +128,9 @@ public class Robot extends TimedRobot {
     airCompressor.start();
     System.out.println("robotInit() complete!");
 
-    Wire = new I2C(I2C.Port.kOnboard, 8);
+    //Wire = new I2C(I2C.Port.kOnboard, 8);
 
-    SerialPort arduino = new SerialPort(9600, SerialPort.Port.kUSB);
+    //SerialPort arduino = new SerialPort(9600, SerialPort.Port.kUSB);
     
   }
 
@@ -189,9 +189,9 @@ public class Robot extends TimedRobot {
     System.out.println("Initializing teleop");
 
     CommandScheduler.getInstance().cancelAll();
-    CommandScheduler.getInstance().schedule(new ServoManualPositionCommand(motorSubsystem, joystick, limitSwitch));
+    CommandScheduler.getInstance().schedule(new SparkMaxManualControlCommand(motorSubsystem, joystick));
 
-    joystick.getButton(2).whenPressed(new SendSerialInfo(arduino, "Go"));
+    //joystick.getButton(2).whenPressed(new SendSerialInfo(arduino, "Go"));
     joystick.getButton(3).whenPressed(new FalconRotationCommand(motorSubsystem, joystick));
     joystick.getButton(4).whenPressed(new AllMotorsManualControl(motorSubsystem, joystick));
     joystick.getButton(5).whenPressed(new ServoManualPositionCommand(motorSubsystem, joystick, limitSwitch));
